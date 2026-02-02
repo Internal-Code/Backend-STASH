@@ -1,0 +1,4 @@
+hostname:
+  dev: "https://dev.stash/"
+  stg: "https://staging-stash/"
+  prod: "https://stash/"
