@@ -7,6 +7,6 @@ class IndonesianErrorMessageTranslator(IndonesianBaseMessageTranslator):
         self.message.update(
             {
                 "validation_error": "Input tidak valid. Silakan periksa data permintaan Anda.",
-                "data_not_found_error": "Data tidak ditemukan.",
+                "not_found_error": "Data tidak ditemukan.",
             }
         )

@@ -7,6 +7,6 @@ class EnglishErrorMessageTranslator(EnglishBaseMessageTranslator):
         self.message.update(
             {
                 "validation_error": "Invalid input. Please check your request data.",
-                "data_not_found_error": "Data not found.",
+                "not_found_error": "Data not found.",
             }
         )

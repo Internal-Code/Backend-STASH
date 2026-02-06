@@ -1,12 +1,10 @@
-from litestar import get
+from litestar import get, status_codes
 from schemas.response import Default
 from languages.translator import get_translator
 from languages.context import current_lang
-from errors.custom import DataNotFoundError
 
-@get(status_code=200, summary="Root endpoint.", tags=["Root"], response=Default)
+@get(status_code=status_codes.HTTP_200_OK, summary="Root endpoint.", tags=["Root"], response=Default)
 async def root() -> Default:
-    raise DataNotFoundError(errors={"test":"test"})
     response = Default()
     resolved_lang = current_lang.get()
     translator = get_translator(resolved_lang)
