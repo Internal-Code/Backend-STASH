@@ -1,4 +1,5 @@
 import json
+from error.custom import DataNotFoundError
 from dataclasses import dataclass
 from typing import Optional, Annotated, Union
 from litestar import Litestar, post, status_codes, Router, Request
@@ -16,6 +17,7 @@ from error.register import CustomException
 from error.custom import BaseError
 from litestar.exceptions import ValidationException
 from litestar.exceptions import HTTPException
+from pydantic_core import ValidationError
 
 throttle_config = RateLimitConfig(rate_limit=("second", 10))
 custom_exception = CustomException()
@@ -26,28 +28,26 @@ class User(BaseModel):
 
 
 class UserConvert(BaseModel):
-    name: str
+    name: str = Field(min_length=1)
     age: Optional[int] = Field(ge=1)
     address: str
 
+class Users(BaseModel):
+    users: list[UserConvert]
 
 @post(path="/register", status_code=status_codes.HTTP_201_CREATED, response=Default)
 async def register_user(
-    data: Annotated[User, Body(media_type=RequestEncodingType.MULTI_PART)],
-    image: Optional[list[UploadFile]] = None
+    data: Annotated[User, Body(media_type=RequestEncodingType.MULTI_PART)]
 ) -> Default:
     try:
         parsed = json.loads(data.user)
-        converted_to_user = [UserConvert.model_validate(user) for user in parsed]
+        Users(users=parsed)
+    except ValidationException:
+        raise
     except json.JSONDecodeError:
-        pass
-        print("fail to decode")
-    except Exception as e:
-        print(e)
-        raise ValidationException(extra=[{
-            "key": "user",
-            "message": "Invalid JSON"
-        }])
+        raise 
+    except ValidationError:
+        raise
     response = Default()
     response.message = "testing"
     return response
@@ -63,6 +63,8 @@ app = Litestar(
     openapi_config=get_scalar_openapi_config(),
     middleware=[TimeoutMiddleware(), LanguageMiddleware()],
     exception_handlers={
-        ValidationException: custom_exception.pydantic_handler
+        ValidationError: custom_exception.pydantic_handler,
+        json.JSONDecodeError: custom_exception.json_handler,
+        ValidationException: custom_exception.base_handler
     }
 )
